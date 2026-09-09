@@ -1,0 +1,11 @@
+name = "keep-scan"
+main = "src/index.ts"
+compatibility_date = "2026-08-01"
+
+# Secrets (set these with `npx wrangler secret put <NAME>`):
+#   OPENAI_API_KEY   required — from platform.openai.com
+#   APP_TOKEN        recommended — any random string; mirror it in the app's EXPO_PUBLIC_SCAN_TOKEN
+# Local dev reads them from .dev.vars (gitignored).
+
+[vars]
+MODEL = "gpt-5-mini"
