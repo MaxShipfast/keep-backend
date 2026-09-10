@@ -9,13 +9,23 @@
  *   APP_TOKEN       — optional shared secret; when set, requests must send
  *                     Authorization: Bearer <APP_TOKEN>
  *   MODEL           — optional, defaults to gpt-5-mini
+ *   REASONING_EFFORT — optional (GPT-5 / o-series only): minimal | low | medium | high.
+ *                      Defaults to low; higher values are noticeably slower per scan.
+ *
+ * GET /health -> { ok, model, configured }  (cheap liveness/config probe)
  */
 
 export interface Env {
   OPENAI_API_KEY: string;
   APP_TOKEN?: string;
   MODEL?: string;
+  REASONING_EFFORT?: string;
 }
+
+const DEFAULT_MODEL = 'gpt-5-mini';
+const DEFAULT_REASONING_EFFORT = 'low';
+/** Hard stop for the upstream vision call so the app gets a clean error instead of a hung request. */
+const OPENAI_TIMEOUT_MS = 55_000;
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -75,6 +85,10 @@ export default {
 
     const url = new URL(request.url);
 
+    if (request.method === 'GET' && url.pathname === '/health') {
+      return json({ ok: true, model: env.MODEL ?? DEFAULT_MODEL, configured: Boolean(env.OPENAI_API_KEY) }, 200);
+    }
+
     if (request.method === 'GET' && (url.pathname === '/privacy' || url.pathname === '/terms')) {
       return new Response(url.pathname === '/privacy' ? PRIVACY_HTML : TERMS_HTML, {
         headers: { 'Content-Type': 'text/html; charset=utf-8', ...CORS },
@@ -107,38 +121,64 @@ export default {
     }
     const mediaType = body.mediaType === 'image/png' ? 'image/png' : 'image/jpeg';
 
-    const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        authorization: `Bearer ${env.OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: env.MODEL ?? 'gpt-5-mini',
-        max_completion_tokens: 2000,
-        response_format: { type: 'json_schema', json_schema: MEAL_SCHEMA },
-        messages: [
-          { role: 'system', content: SYSTEM },
-          {
-            role: 'user',
-            content: [
-              { type: 'image_url', image_url: { url: `data:${mediaType};base64,${imageBase64}` } },
-              { type: 'text', text: 'Estimate this meal.' },
-            ],
-          },
-        ],
-      }),
-    });
+    const model = env.MODEL ?? DEFAULT_MODEL;
+    // Reasoning models (GPT-5 family, o-series) "think" before answering. At the default effort a
+    // single food photo took 20+ s end to end; "low" brings that to a few seconds while keeping the
+    // structured estimate. Non-reasoning models reject the parameter, so only send it when relevant.
+    const isReasoningModel = /^(gpt-5|o\d)/.test(model);
+    const startedAt = Date.now();
+
+    let openaiRes: Response;
+    try {
+      openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          authorization: `Bearer ${env.OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model,
+          max_completion_tokens: 3000,
+          ...(isReasoningModel ? { reasoning_effort: env.REASONING_EFFORT ?? DEFAULT_REASONING_EFFORT } : {}),
+          response_format: { type: 'json_schema', json_schema: MEAL_SCHEMA },
+          messages: [
+            { role: 'system', content: SYSTEM },
+            {
+              role: 'user',
+              content: [
+                { type: 'image_url', image_url: { url: `data:${mediaType};base64,${imageBase64}` } },
+                { type: 'text', text: 'Estimate this meal.' },
+              ],
+            },
+          ],
+        }),
+        signal: AbortSignal.timeout(OPENAI_TIMEOUT_MS),
+      });
+    } catch (e) {
+      console.log(`scan: upstream request failed after ${Date.now() - startedAt}ms: ${String(e)}`);
+      return json({ error: 'Vision model timed out — try again' }, 504);
+    }
 
     if (!openaiRes.ok) {
       const detail = await openaiRes.text();
+      console.log(`scan: upstream HTTP ${openaiRes.status} after ${Date.now() - startedAt}ms: ${detail.slice(0, 300)}`);
       return json({ error: 'Vision model error', detail: detail.slice(0, 300) }, 502);
     }
 
     const data = (await openaiRes.json()) as {
-      choices: Array<{ message: { content: string | null } }>;
+      choices: Array<{ finish_reason?: string; message: { content: string | null; refusal?: string | null } }>;
     };
-    const content = data.choices?.[0]?.message?.content;
+    const choice = data.choices?.[0];
+    console.log(`scan: model=${model} finish=${choice?.finish_reason ?? '?'} ${Date.now() - startedAt}ms`);
+
+    if (choice?.message?.refusal) {
+      return json({ error: 'Model declined to analyse this image', detail: choice.message.refusal.slice(0, 200) }, 422);
+    }
+    if (choice?.finish_reason === 'length') {
+      // Reasoning consumed the whole token budget before any JSON was written.
+      return json({ error: 'Model ran out of tokens before answering — try again' }, 502);
+    }
+    const content = choice?.message?.content;
     if (!content) return json({ error: 'No structured result from model' }, 502);
 
     try {

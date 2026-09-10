@@ -9,3 +9,6 @@ compatibility_date = "2026-08-01"
 
 [vars]
 MODEL = "gpt-5-mini"
+# GPT-5 models reason before answering. At the default (medium) effort one food photo took
+# 20+ s end to end; "low" answers in a few seconds. Options: minimal | low | medium | high.
+REASONING_EFFORT = "low"
