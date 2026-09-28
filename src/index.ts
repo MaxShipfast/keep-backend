@@ -202,15 +202,20 @@ const PAGE_STYLE = `<style>
 
 const PRIVACY_HTML = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Keep — Privacy Policy</title>${PAGE_STYLE}</head><body>
 <h1>Keep — Privacy Policy</h1>
-<p>Effective: September 2026</p>
+<p>Effective: October 2026</p>
 <h2>The short version</h2>
-<p>Your health data stays on your phone. Keep has no accounts and no server database of user data.</p>
+<p>Keep works without an account, and then your health data stays on your phone. If you choose to create an account, we back your data up so you can restore it on a new phone, and you can delete the account and backup at any time in the app.</p>
 <h2>Data stored on your device</h2>
-<p>Your quiz answers (medication, injection day, weight, training habits, goal), logged meals, workouts, weigh-ins, and scores are stored locally on your device only. Deleting the app deletes this data. We cannot access it.</p>
+<p>Your quiz answers (medication, injection day, weight, training habits, goal), logged meals, workouts, weigh-ins, and scores are stored on your device. Without an account, deleting the app deletes this data and we cannot access it.</p>
+<h2>Accounts (optional)</h2>
+<p>You can create an account with Sign in with Apple or your email address. We then store your email address (or the private relay address Apple provides), your first name if Apple shares it, and a backup of your plan, meals, workouts and weigh-ins, so they can be restored on another phone. We also record your country from your phone's settings, how you signed up, when you first saw the Keep Pro offer, and whether you subscribe. This data is stored with Supabase, our database provider, and is only accessible to your account and to us.</p>
+<p>To delete your account, open Settings in the app and tap Delete account. This immediately and permanently deletes your account and backup from our servers. Data on your phone stays until you delete the app.</p>
+<h2>Email</h2>
+<p>If you have an account, we may send emails about your plan and Keep Pro, such as reminders and offers, when you agreed to them or where the law allows it. Every email has an unsubscribe link. We never sell your data or share it for advertising.</p>
 <h2>Meal photos</h2>
 <p>Keep asks your permission before it sends any meal photo for analysis. When you scan a meal, the photo is sent over an encrypted connection to our server, which forwards it to OpenAI's API to estimate nutrition. Keep does not store the photo. OpenAI does not use API data to train its models, and may retain it for up to 30 days for abuse monitoring before deleting it. You can log any meal by typing instead, and no photo is sent.</p>
 <h2>Purchases</h2>
-<p>Subscriptions are processed by Apple. We never see your payment details. Purchase state may be managed by RevenueCat, our subscription infrastructure provider, using an anonymous identifier.</p>
+<p>Subscriptions are processed by Apple. We never see your payment details. Purchase state is managed by RevenueCat, our subscription infrastructure provider, using an anonymous identifier, or your account ID and email address if you have an account.</p>
 <h2>Analytics</h2>
 <p>Keep does not use analytics or advertising SDKs, and does not track you across other companies' apps or websites.</p>
 <h2>Not medical advice</h2>
