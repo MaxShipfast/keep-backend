@@ -24,8 +24,12 @@ export interface Env {
 
 const DEFAULT_MODEL = 'gpt-5-mini';
 const DEFAULT_REASONING_EFFORT = 'low';
-/** Hard stop for the upstream vision call so the app gets a clean error instead of a hung request. */
-const OPENAI_TIMEOUT_MS = 55_000;
+/**
+ * Hard stop for the upstream vision call so the app gets a clean error instead of a hung request.
+ * Must stay below the app's own 45 s scan timeout, or the app gives up first and shows a generic
+ * message while this worker keeps paying for a response nobody reads.
+ */
+const OPENAI_TIMEOUT_MS = 40_000;
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
