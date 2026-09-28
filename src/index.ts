@@ -93,8 +93,9 @@ export default {
       return json({ ok: true, model: env.MODEL ?? DEFAULT_MODEL, configured: Boolean(env.OPENAI_API_KEY) }, 200);
     }
 
-    if (request.method === 'GET' && (url.pathname === '/privacy' || url.pathname === '/terms')) {
-      return new Response(url.pathname === '/privacy' ? PRIVACY_HTML : TERMS_HTML, {
+    const PAGES: Record<string, string> = { '/privacy': PRIVACY_HTML, '/terms': TERMS_HTML, '/support': SUPPORT_HTML };
+    if (request.method === 'GET' && PAGES[url.pathname]) {
+      return new Response(PAGES[url.pathname], {
         headers: { 'Content-Type': 'text/html; charset=utf-8', ...CORS },
       });
     }
@@ -231,6 +232,24 @@ const TERMS_HTML = `<!doctype html><html lang="en"><head><meta charset="utf-8"><
 <p>The service is provided "as is" without warranties. To the maximum extent permitted by law, our liability is limited to the amount you paid in the last 12 months.</p>
 <h2>Contact</h2>
 <p><a href="mailto:info@shipfast.agency">info@shipfast.agency</a></p>
+</body></html>`;
+
+const SUPPORT_HTML = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Keep — Support</title>${PAGE_STYLE}</head><body>
+<h1>Keep — Support</h1>
+<p>Questions, feedback, or a problem with the app? Email <a href="mailto:info@shipfast.agency">info@shipfast.agency</a> — we reply within two business days.</p>
+<h2>How do I cancel my subscription?</h2>
+<p>On your iPhone open <strong>Settings → your name → Subscriptions → Keep</strong> and tap Cancel Subscription. You can also get there from inside Keep: <strong>Settings → Manage or cancel subscription</strong>. Cancel at least 24 hours before your trial or billing period ends to avoid the next charge.</p>
+<h2>Can I get a refund?</h2>
+<p>Apple handles all billing for Keep, so refunds are requested through Apple at <a href="https://reportaproblem.apple.com">reportaproblem.apple.com</a>.</p>
+<h2>I have a new phone. How do I get Keep Pro back?</h2>
+<p>Sign in with the same Apple ID, open Keep, complete the short setup, then tap <strong>Restore purchase</strong> on the Keep Pro screen.</p>
+<h2>How accurate is the meal scan?</h2>
+<p>The scan is an AI estimate of the portion visible in the photo. It works best with the whole plate in frame and good light. If an estimate looks off, log the meal by hand with "Type it instead".</p>
+<h2>Where is my data stored?</h2>
+<p>Your plan, meals, and weigh-ins are stored on your phone. Meal photos are sent securely for analysis and are not stored by Keep. See the <a href="/privacy">Privacy Policy</a>.</p>
+<h2>Is Keep medical advice?</h2>
+<p>No. Keep provides general nutrition tracking and is not medical advice. Always follow your prescriber's instructions for your medication and diet.</p>
+<p><a href="/privacy">Privacy Policy</a> · <a href="/terms">Terms of Use</a></p>
 </body></html>`;
 
 function json(payload: unknown, status: number): Response {
