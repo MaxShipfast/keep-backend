@@ -202,17 +202,17 @@ const PAGE_STYLE = `<style>
 
 const PRIVACY_HTML = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Keep — Privacy Policy</title>${PAGE_STYLE}</head><body>
 <h1>Keep — Privacy Policy</h1>
-<p>Effective: August 2026</p>
+<p>Effective: September 2026</p>
 <h2>The short version</h2>
 <p>Your health data stays on your phone. Keep has no accounts and no server database of user data.</p>
 <h2>Data stored on your device</h2>
 <p>Your quiz answers (medication, injection day, weight, training habits, goal), logged meals, workouts, weigh-ins, and scores are stored locally on your device only. Deleting the app deletes this data. We cannot access it.</p>
 <h2>Meal photos</h2>
-<p>When you scan a meal, the photo is sent over an encrypted connection to our server, which forwards it to OpenAI's API to estimate nutrition. The photo is processed transiently and is not stored by Keep. It is subject to OpenAI's API data policies, which do not use API data for model training by default.</p>
+<p>Keep asks your permission before it sends any meal photo for analysis. When you scan a meal, the photo is sent over an encrypted connection to our server, which forwards it to OpenAI's API to estimate nutrition. Keep does not store the photo. OpenAI does not use API data to train its models, and may retain it for up to 30 days for abuse monitoring before deleting it. You can log any meal by typing instead, and no photo is sent.</p>
 <h2>Purchases</h2>
 <p>Subscriptions are processed by Apple. We never see your payment details. Purchase state may be managed by RevenueCat, our subscription infrastructure provider, using an anonymous identifier.</p>
 <h2>Analytics</h2>
-<p>We collect anonymous usage events (for example, that a scan happened) to improve the app. No health values, photos, or personal identifiers are included.</p>
+<p>Keep does not use analytics or advertising SDKs, and does not track you across other companies' apps or websites.</p>
 <h2>Not medical advice</h2>
 <p>Keep provides general nutrition tracking. It is not medical advice. Always follow your prescriber's instructions.</p>
 <h2>Contact</h2>
